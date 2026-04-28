@@ -29,7 +29,7 @@ Two environment variables are also documented:
 - `CAPITAL_KILO` — when set, use upper-case `K` for *all* metric
   multipliers, not just those ≥ 1000.
 
-## Three modes the sim-ltspice driver actually uses
+## Three modes the sim-plugin-ltspice driver actually uses
 
 ```bash
 # Batch-solve a netlist  →  emits sibling .log + .raw
@@ -53,7 +53,7 @@ sits at ~0% CPU indefinitely and never writes a `.net`. Reproduced
 against LTspice's own shipped `examples/Educational/MonteCarlo.asc`.
 Workarounds:
 
-1. **Preferred:** use `sim_ltspice.schematic_to_netlist` (the
+1. **Preferred:** use `sim_plugin_ltspice.lib.schematic_to_netlist` (the
    in-process Python flattener). No LTspice binary involved.
 2. Fall back to LTspice XVII (17.2.4) for `.asc` → `.net` if you have
    it side-by-side.
@@ -64,13 +64,13 @@ LTspice GUI cannot render under `WinSta0\Service`, the session SSH
 processes land in. A `-b` invocation from SSH on Windows hangs (no
 output, never terminates). Workarounds: run `sim serve` from an
 interactive desktop (RDP) session, or invoke from inside an RDP
-shell. The `sim-ltspice` runner has a 300 s default timeout that
+shell. The `sim-plugin-ltspice` runner has a 300 s default timeout that
 makes this fail-fast rather than hang forever.
 
 ### `-Run` is a no-op for `-b`
 
 `-b` already starts simulating immediately. `-Run -b` is the form
-sim-ltspice emits on Windows because some older docs paired them; it
+sim-plugin-ltspice emits on Windows because some older docs paired them; it
 behaves identically to `-b` alone.
 
 ### `-I<path>` ordering trap

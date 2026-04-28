@@ -49,12 +49,12 @@ solve time with `unknown subckt or model: 2N9999`.
 
 ## Offline lint
 
-`sim_ltspice.cmp.ComponentModelCatalog` (forthcoming, see
-[sim-ltspice#TBD](https://github.com/svd-ai-lab/sim-ltspice)) will
+`sim_plugin_ltspice.lib.cmp.ComponentModelCatalog` (forthcoming, see
+[sim-plugin-ltspice#TBD](https://github.com/svd-ai-lab/sim-plugin-ltspice)) will
 parse all eight files at install-discovery time and expose:
 
 ```python
-from sim_ltspice import ComponentModelCatalog
+from sim_plugin_ltspice.lib import ComponentModelCatalog
 
 cat = ComponentModelCatalog()
 cat.find("2N2222")           # → ModelDef(name="2N2222", kind="bjt", ...)

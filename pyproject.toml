@@ -4,29 +4,34 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sim-plugin-ltspice"
-version = "0.1.0"
-description = "LTspice driver for sim — thin adapter over ``sim_ltspice``."
+version = "0.2.0"
+description = "LTspice driver for sim — bundled .asc/.net/.raw/.log library + driver in one wheel."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [{ name = "Weiqi Ji", email = "jiweiqi10@gmail.com" }]
+keywords = ["ltspice", "spice", "eda", "simulation", "schematic", "netlist", "circuit", "sim-cli"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: Apache Software License",
 ]
 dependencies = [
-    "sim-runtime @ git+https://github.com/svd-ai-lab/sim-cli@88d82ee",
-    # The driver is a thin adapter over `sim_ltspice` (separately
-    # published on PyPI). All file-format / layout / search-path logic
-    # lives in that library; this plugin owns only the sim-cli driver
-    # adapter.
-    "sim-ltspice>=0.1",
+    "sim-cli-core @ git+https://github.com/svd-ai-lab/sim-cli@main",
+    # numpy is a runtime requirement of the bundled .raw / .log parsers
+    # (formerly the standalone sim-ltspice library, folded in v0.2.0).
+    "numpy>=1.24",
 ]
 
 [project.optional-dependencies]
@@ -34,6 +39,8 @@ test = [
     "pytest>=7",
     "build>=1.0",
 ]
+# Optional pandas accelerator for RawRead → DataFrame conversion.
+dataframe = ["pandas>=2.0"]
 
 [project.entry-points."sim.drivers"]
 ltspice = "sim_plugin_ltspice:LTspiceDriver"
@@ -49,10 +56,14 @@ Homepage = "https://github.com/svd-ai-lab/sim-plugin-ltspice"
 Issues = "https://github.com/svd-ai-lab/sim-plugin-ltspice/issues"
 
 [tool.hatch.metadata]
-# Required because `sim-runtime` is pinned to a git+https URL — sim-cli is
+# Required because `sim-cli-core` is pinned to a git+https URL — sim-cli is
 # distributed via GitHub, not PyPI. See sim-proj memory: plugin distribution
 # is GitHub-only.
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sim_plugin_ltspice"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires LTspice installed on the host"]

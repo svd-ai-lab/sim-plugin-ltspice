@@ -1,6 +1,6 @@
 """Protocol-compliance tests for the LTspice driver.
 
-The driver itself is now a thin adapter over ``sim_ltspice``; heavy
+The driver itself is now a thin adapter over ``sim_plugin_ltspice.lib``; heavy
 file-format testing (log parsing, raw header parsing, install discovery)
 lives in the sim-ltspice repo. These tests exercise only the adapter
 surface that sim-cli is responsible for: `detect`, `lint`, `connect`,
@@ -137,9 +137,9 @@ class TestConnect:
 
 class TestDetectInstalled:
     def test_maps_sim_ltspice_install_to_solver(self, monkeypatch):
-        """detect_installed delegates to sim_ltspice.find_ltspice and maps the
+        """detect_installed delegates to sim_plugin_ltspice.lib.find_ltspice and maps the
         Install dataclass to sim-cli's SolverInstall shape."""
-        from sim_ltspice.install import Install
+        from sim_plugin_ltspice.lib.install import Install
 
         fake_exe = Path("/fake/LTspice")
         fake = Install(
@@ -196,10 +196,10 @@ class TestRunFile:
             d.run_file(FIXTURES / "ltspice_good.net")
 
     def test_folds_sim_ltspice_result_into_json_summary(self, monkeypatch):
-        """run_file translates sim_ltspice.RunResult into a sim-cli RunResult
+        """run_file translates sim_plugin_ltspice.lib.RunResult into a sim-cli RunResult
         with the JSON summary appended to stdout."""
-        from sim_ltspice import RunResult as LtRunResult
-        from sim_ltspice.log import LogResult, Measure
+        from sim_plugin_ltspice.lib import RunResult as LtRunResult
+        from sim_plugin_ltspice.lib.log import LogResult, Measure
 
         d = LTspiceDriver()
         monkeypatch.setattr(
@@ -248,8 +248,8 @@ class TestRunFile:
     def test_log_errors_promote_exit_code(self, monkeypatch):
         """Errors found in the .log file force exit_code != 0 even when
         LTspice itself exited cleanly."""
-        from sim_ltspice import RunResult as LtRunResult
-        from sim_ltspice.log import LogResult
+        from sim_plugin_ltspice.lib import RunResult as LtRunResult
+        from sim_plugin_ltspice.lib.log import LogResult
 
         d = LTspiceDriver()
         monkeypatch.setattr(
@@ -277,8 +277,8 @@ class TestRunFile:
 
     def test_asc_dispatches_to_run_asc(self, monkeypatch, tmp_path):
         """A `.asc` input must reach run_asc, not run_net."""
-        from sim_ltspice import RunResult as LtRunResult
-        from sim_ltspice.log import LogResult
+        from sim_plugin_ltspice.lib import RunResult as LtRunResult
+        from sim_plugin_ltspice.lib.log import LogResult
 
         d = LTspiceDriver()
         monkeypatch.setattr(
@@ -316,8 +316,8 @@ class TestRunFile:
         assert result.solver == "ltspice"
 
     def test_flatten_error_maps_to_runtime_error(self, monkeypatch, tmp_path):
-        """A FlattenError from sim_ltspice must surface as RuntimeError."""
-        from sim_ltspice.netlist import FlattenError as LtFlattenError
+        """A FlattenError from sim_plugin_ltspice.lib must surface as RuntimeError."""
+        from sim_plugin_ltspice.lib.netlist import FlattenError as LtFlattenError
 
         d = LTspiceDriver()
         monkeypatch.setattr(

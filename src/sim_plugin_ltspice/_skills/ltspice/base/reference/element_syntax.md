@@ -60,7 +60,7 @@ V2  vee 0 -15
 
 Pin order for `X` is **whatever the `.subckt` header declares** — get
 it wrong and LTspice either errors ("Unknown parameter") or silently
-produces nonsense. When using `sim_ltspice.symbols.parse_asy`, the
+produces nonsense. When using `sim_plugin_ltspice.lib.symbols.parse_asy`, the
 `.asy`'s `SpiceOrder` attribute encodes this — read it first.
 
 ## Behavioural sources (`B`)

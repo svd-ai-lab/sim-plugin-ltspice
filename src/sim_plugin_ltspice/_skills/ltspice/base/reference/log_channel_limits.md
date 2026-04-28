@@ -23,7 +23,7 @@ all of which appear in the `.log`:
 - **Initial conditions**: `.IC` / `.NODESET` warnings.
 - **Run summary**: total elapsed time, solver method, matrix stats.
 
-`sim_ltspice.log.parse_log` surfaces these as
+`sim_plugin_ltspice.lib.log.parse_log` surfaces these as
 `LogResult.measures` / `.errors` / `.warnings`.
 
 ## What `.log` does NOT capture
@@ -45,12 +45,12 @@ These are GUI-side events that never touch the file system:
 
 ## Practical implication
 
-The `sim_ltspice.runner` health-check has to use **two strategies**:
+The `sim_plugin_ltspice.lib.runner` health-check has to use **two strategies**:
 
 | Failure mode | Detection |
 |---|---|
 | Solver error during a batch run | Parse `.log` → `LogResult.errors` |
-| LTspice never produces output (GUI hang, `-netlist` regression, session-0 hang) | Subprocess timeout (default 300 s in `sim_ltspice.runner`) → exit code 124 |
+| LTspice never produces output (GUI hang, `-netlist` regression, session-0 hang) | Subprocess timeout (default 300 s in `sim_plugin_ltspice.lib.runner`) → exit code 124 |
 | Schematic editing / interactive popup | Out of scope for batch driver; use UIA if needed |
 
 `run_net` already handles the first two automatically. There is no
@@ -78,4 +78,4 @@ When debugging "LTspice didn't produce output," the diagnostic order is:
    netlist was missing an analysis directive (`.tran`, `.ac`, etc.).
    `sim lint` catches this.
 
-`sim_ltspice` already implements this triage. Don't roll your own.
+`sim_plugin_ltspice.lib` already implements this triage. Don't roll your own.

@@ -1,6 +1,6 @@
 # Symbol & include search path resolution
 
-When LTspice (or `sim-ltspice`) tries to resolve `<symbol>` references
+When LTspice (or `sim-plugin-ltspice`) tries to resolve `<symbol>` references
 in a `.asc` or `.lib` / `.include` directives in a `.net`, it walks
 search paths in a deterministic order. Knowing this order is the
 fastest way to debug "symbol not found" / "library not found" errors.
@@ -23,9 +23,9 @@ fastest way to debug "symbol not found" / "library not found" errors.
 the search path — the bundled `lib.zip` is unzipped to the user-data
 dir on first launch and re-extracted by `LTspice.exe -sync`.
 
-## sim-ltspice extensions
+## sim-plugin-ltspice extensions
 
-`sim_ltspice.symbols.SymbolCatalog` honours an additional env var on
+`sim_plugin_ltspice.lib.symbols.SymbolCatalog` honours an additional env var on
 top of the LTspice-native order:
 
 ```

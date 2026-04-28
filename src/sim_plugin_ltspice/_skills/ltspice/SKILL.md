@@ -21,12 +21,14 @@ not what the content says.
 
 LTspice is the free SPICE3 simulator from Analog Devices. It has **no
 vendor Python API** — unlike Fluent (pyfluent), COMSOL (mph), or MATLAB
-(matlabengine). The sim-cli driver for LTspice is a thin adapter over
-[**sim-ltspice**](https://github.com/svd-ai-lab/sim-ltspice), a
-standalone Python library that IS the Python API for LTspice.
+(matlabengine). The
+[**sim-plugin-ltspice**](https://github.com/svd-ai-lab/sim-plugin-ltspice)
+plugin ships its own Python API as `sim_plugin_ltspice.lib`: pure-Python
+parsers for `.asc`/`.net`/`.log`/`.raw` plus a subprocess runner around
+the LTspice CLI. That bundled lib IS the Python API for LTspice.
 
 Implication: everything in this skill stays identical whether you call
-`sim run foo.net --solver ltspice`, or import `sim_ltspice` directly in
+`sim run foo.net --solver ltspice`, or import `sim_plugin_ltspice.lib` directly in
 Python. The file format understanding and platform quirks are the same.
 
 ## Input classification
@@ -34,8 +36,8 @@ Python. The file format understanding and platform quirks are the same.
 | Input | Accepted by sim-cli? | Notes |
 |---|---|---|
 | `.net` / `.cir` / `.sp` netlist | ✅ today | SPICE3 syntax; first line is title (ignored by solver); must contain at least one analysis directive |
-| `.asc` schematic (flat, library-local) | 🟡 sim-ltspice v0.1+ — on macOS goes through our native asc2net; on Windows/wine goes through LTspice's own `-netlist` | Schematic opens in LTspice GUI for human review |
-| `.asc` schematic (hierarchical or custom lib) | 🟡 Windows / wine only | Routed through `sim_ltspice.schematic_to_netlist` (the in-process Python flattener, since LTspice 26.0.1's `-netlist` flag is broken). On macOS raises `MacOSCannotFlatten` with guidance to route via a Windows host. |
+| `.asc` schematic (flat, library-local) | 🟡 sim-plugin-ltspice v0.1+ — on macOS goes through our native asc2net; on Windows/wine goes through LTspice's own `-netlist` | Schematic opens in LTspice GUI for human review |
+| `.asc` schematic (hierarchical or custom lib) | 🟡 Windows / wine only | Routed through `sim_plugin_ltspice.lib.schematic_to_netlist` (the in-process Python flattener, since LTspice 26.0.1's `-netlist` flag is broken). On macOS raises `MacOSCannotFlatten` with guidance to route via a Windows host. |
 | `.raw` / `.log` inputs | ❌ outputs only | Do not pass these to `sim run` |
 
 When you produce a netlist for an agent workflow, **always use `.net`**.
@@ -59,7 +61,7 @@ driver has the fewest edge cases for it.
 | `.log` encoding | UTF-16 LE (no BOM) | UTF-8 | UTF-8 | UTF-16 LE |
 | `.raw` header encoding | UTF-16 LE | UTF-16 LE | UTF-16 LE | UTF-16 LE |
 
-† On macOS 26 the `-netlist` flag works but `sim-ltspice`'s preferred
+† On macOS 26 the `-netlist` flag works but `sim-plugin-ltspice`'s preferred
 path is the in-process `schematic_to_netlist` flattener — no LTspice
 binary touched. Use `-netlist` only when the flattener can't handle a
 hierarchy or custom-symbol case.
@@ -128,7 +130,7 @@ Always read `base/reference/`, then the relevant snippets + workflows.
 | `base/snippets/inverting_amp.net` | Inverting op-amp with `.include LTC.lib` and gain `.meas` |
 | `base/snippets/param_sweep.net` | `.step param R 1k 100k dec 5` + acceptance via `.meas` max/min |
 | `base/workflows/meas_based_acceptance.md` | End-to-end: define acceptance → write `.meas` → `sim run` → read JSON → verify |
-| `base/workflows/regression_diff.md` | Two-run `.raw` comparison with `sim_ltspice.diff(a, b)`. Pin a golden `.raw`, gate refactor PRs on waveform equivalence |
+| `base/workflows/regression_diff.md` | Two-run `.raw` comparison with `sim_plugin_ltspice.lib.diff(a, b)`. Pin a golden `.raw`, gate refactor PRs on waveform equivalence |
 | `base/workflows/gui_review_handoff.md` | Python builds `.asc` → spawn LTspice GUI → human reviews / edits → re-read. Waveform viewer handoff. `sim.gui` pywinauto notes for Windows dialogs |
 | `base/workflows/param_sweep_postprocess.md` | `.step param` sweep → extract per-step scalars (`.meas`) or slice full traces (`RawRead.to_dataframe()` + axis-seam split) for plotting / custom math |
 | `base/workflows/monte_carlo.md` *(planned — not yet written)* | Monte-Carlo via `.step` + `mc()` + Python loop with `sim run` per seed |
@@ -171,7 +173,7 @@ convention.
    shorter form used in every example and our parser is tuned for it.
 
 3. **Windows `.log` encoding trap.** LTspice 26 writes UTF-8 logs;
-   LTspice 17 (macOS) writes UTF-16 LE. `sim-ltspice` handles both
+   LTspice 17 (macOS) writes UTF-16 LE. `sim-plugin-ltspice` handles both
    transparently, but if you're reading the `.log` yourself with
    `open()`, sniff the encoding.
 
@@ -189,7 +191,7 @@ convention.
 6. **`-netlist` is broken on LTspice 26.0.1 (Windows).** The flag
    silently hangs — no `.net` written, no exit code, no signal.
    Don't shell out to `LTspice.exe -netlist`; use
-   `sim_ltspice.schematic_to_netlist` instead. See
+   `sim_plugin_ltspice.lib.schematic_to_netlist` instead. See
    [`base/reference/command_line_switches.md`](base/reference/command_line_switches.md)
    for the full regression note.
 
@@ -197,7 +199,7 @@ convention.
    for GUI events (popups, schematic-load failures, updater
    dialogs). The only file channel is the per-deck `<deck>.log`,
    which only covers solver-time errors. For hangs and GUI-only
-   failures, the `sim_ltspice.runner` 300 s timeout is the
+   failures, the `sim_plugin_ltspice.lib.runner` 300 s timeout is the
    triage primitive — see
    [`base/reference/log_channel_limits.md`](base/reference/log_channel_limits.md).
 
