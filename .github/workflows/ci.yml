@@ -18,8 +18,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: uv venv
-      # Editable install pulls sim-cli-core from git per pyproject.
+      # setup-uv@v5 pre-creates a venv at $VIRTUAL_ENV; uv pip install
+      # without --system targets that venv automatically.
       - run: uv pip install -e .[test]
       # Skip the integration-marked e2e + wheel-build tests in CI by default
       # (LTspice is not present on the runner; wheel test is fine but slow).
