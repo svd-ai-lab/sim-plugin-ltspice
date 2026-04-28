@@ -1,13 +1,14 @@
-"""LTspice driver for sim — thin adapter over ``sim_ltspice``.
+"""LTspice driver for sim — thin adapter over the bundled ``lib`` package.
 
 The heavy work (install discovery, subprocess invocation, `.log`
 encoding sniffing, `.raw` header parsing, `.asc` flattening) lives in
-the standalone ``sim-ltspice`` package on PyPI. This module only
+``sim_plugin_ltspice.lib`` (formerly the standalone ``sim-ltspice``
+package on PyPI; folded in v0.2.0 to ship one wheel). This module only
 bridges between that library and sim-cli's ``DriverProtocol``.
 
 Accepts ``.net`` / ``.cir`` / ``.sp`` netlists and ``.asc``
 schematics. Schematics are flattened to a sibling netlist via
-``sim_ltspice.run_asc`` before the actual solve.
+``lib.run_asc`` before the actual solve.
 """
 from __future__ import annotations
 
@@ -16,11 +17,11 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sim_ltspice import NETLIST_SUFFIXES, find_ltspice
-from sim_ltspice import RunResult as LtRunResult
-from sim_ltspice.install import Install
-from sim_ltspice.netlist import FlattenError
-from sim_ltspice.runner import (
+from sim_plugin_ltspice.lib import NETLIST_SUFFIXES, find_ltspice
+from sim_plugin_ltspice.lib import RunResult as LtRunResult
+from sim_plugin_ltspice.lib.install import Install
+from sim_plugin_ltspice.lib.netlist import FlattenError
+from sim_plugin_ltspice.lib.runner import (
     LtspiceNotInstalled,
     UnsupportedInput,
     run_asc,
@@ -52,7 +53,7 @@ _ASC_ANALYSIS_RE = re.compile(
 
 
 def _install_to_solver(inst: Install) -> SolverInstall:
-    """Map ``sim_ltspice.Install`` → sim-cli ``SolverInstall``."""
+    """Map ``lib.Install`` → sim-cli ``SolverInstall``."""
     return SolverInstall(
         name="ltspice",
         version=inst.version or "unknown",
@@ -63,7 +64,7 @@ def _install_to_solver(inst: Install) -> SolverInstall:
 
 
 def _measures_to_dict(log) -> dict[str, dict]:
-    """Flatten ``sim_ltspice.LogResult.measures`` into sim-cli's JSON shape."""
+    """Flatten ``lib.LogResult.measures`` into sim-cli's JSON shape."""
     out: dict[str, dict] = {}
     for name, m in log.measures.items():
         entry: dict = {"expr": m.expr, "value": m.value}
@@ -80,7 +81,7 @@ class LTspiceDriver:
 
     Sessions are not supported: LTspice exposes no Python API or stdin
     protocol. Every invocation is a subprocess batch run routed through
-    ``sim_ltspice.run_net``.
+    ``lib.run_net``.
     """
 
     @property
@@ -219,7 +220,7 @@ class LTspiceDriver:
             )
         # Mirror the driver-protocol contract: raise RuntimeError if
         # nothing is installed, preserving the sim-cli error surface even
-        # though sim_ltspice raises its own LtspiceNotInstalled.
+        # though `lib` raises its own LtspiceNotInstalled.
         if not self.detect_installed():
             raise RuntimeError(
                 "LTspice is not installed; set SIM_LTSPICE_EXE or install it."
@@ -237,7 +238,7 @@ class LTspiceDriver:
         except FlattenError as exc:
             raise RuntimeError(f"Cannot flatten schematic: {exc}") from exc
 
-        # Fold sim_ltspice's structured log + trace list into the JSON
+        # Fold the lib's structured log + trace list into the JSON
         # summary so parse_output() can pick it up from stdout.
         parsed = {
             "measures": _measures_to_dict(lt.log),

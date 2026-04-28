@@ -42,6 +42,11 @@ def test_wheel_contains_skills(tmp_path: Path) -> None:
         "sim_plugin_ltspice/__init__.py",
         "sim_plugin_ltspice/driver.py",
         "sim_plugin_ltspice/_skills/ltspice/SKILL.md",
+        # Bundled file-format library (folded in from sim-ltspice in v0.2.0).
+        "sim_plugin_ltspice/lib/__init__.py",
+        "sim_plugin_ltspice/lib/runner.py",
+        "sim_plugin_ltspice/lib/raw.py",
+        "sim_plugin_ltspice/lib/log.py",
     }
     missing = required - names
     assert not missing, f"missing from wheel: {missing}"

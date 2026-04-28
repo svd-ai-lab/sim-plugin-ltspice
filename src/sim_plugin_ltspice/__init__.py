@@ -13,7 +13,7 @@ skills_dir = files(__name__) / "_skills"
 
 plugin_info = {
     "name": "ltspice",
-    "summary": "LTspice driver for sim — thin adapter over ``sim_ltspice``.",
+    "summary": "LTspice driver for sim — bundled .asc/.net/.raw/.log lib + driver in one wheel.",
     "homepage": "https://github.com/svd-ai-lab/sim-plugin-ltspice",
     "license_class": "oss",
     "solver_name": "LTspice",
