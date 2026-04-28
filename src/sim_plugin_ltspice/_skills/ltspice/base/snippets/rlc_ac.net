@@ -1,0 +1,13 @@
+* Series RLC band-pass — output across R, resonant at fr = 1/(2 pi sqrt(LC)) ≈ 5.03 kHz
+* AC sweep produces complex V(out); use sim_ltspice.RawRead for magnitude/phase.
+V1  in  0   AC 1
+L1  in  a   10m
+C1  a   out 100n
+R1  out 0   50
+.ac dec 50 100 100k
+.meas AC peakmag MAX mag(V(out))
+.meas AC fr      WHEN ph(V(out))=0 CROSS=1
+.meas AC bw_3db_lo  WHEN mag(V(out))=peakmag*0.7071 CROSS=1
+.meas AC bw_3db_hi  WHEN mag(V(out))=peakmag*0.7071 CROSS=LAST
+.meas AC gain_5k FIND mag(V(out)) AT 5.03k
+.end

@@ -1,0 +1,8 @@
+* RC low-pass — 1 kHz -3 dB corner; verify with sim run ... --solver ltspice
+V1  in  0   AC 1 SINE(0 1 1k)
+R1  in  out 1.6k
+C1  out 0   100n
+.ac dec 20 10 100k
+.meas AC fc  WHEN Vdb(out)=-3
+.meas AC gain MAX Vdb(out)
+.end

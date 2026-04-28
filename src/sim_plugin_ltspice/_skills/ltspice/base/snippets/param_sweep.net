@@ -1,0 +1,13 @@
+* Parameter sweep — vary R_load, measure peak V(out) per step
+* Produces a .raw with one dataset per step; .meas aggregates per step.
+.param R_load = 1k
+
+V1  in 0 PULSE(0 5 0 1u 1u 1m 2m)
+R_source in out 100
+R_load   out 0  {R_load}
+C_load   out 0  10n
+
+.tran 5m
+.step param R_load list 100 330 1k 3.3k 10k
+.meas TRAN vout_peak MAX V(out)
+.end

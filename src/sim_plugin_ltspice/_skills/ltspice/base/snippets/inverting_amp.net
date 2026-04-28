@@ -1,0 +1,19 @@
+* Inverting amplifier — gain = -R_feedback / R_in
+* Uses shipped LT1001 op-amp via LTspice's bundled LTC.lib
+.lib LTC.lib
+
+.param R_in       = 1k
+.param R_feedback = 10k
+
+V_in  in 0 SINE(0 100m 1k)
+V_pos vcc 0 15
+V_neg vee 0 -15
+
+XU1 0 invnode vcc vee out LT1001      ; vin+ vin- V+ V- out
+R_in        in     invnode  {R_in}
+R_feedback  invnode out      {R_feedback}
+
+.tran 5m
+.meas TRAN vout_pk   MAX V(out)
+.meas TRAN gain      PARAM vout_pk/0.1      ; linear-domain gain
+.end
