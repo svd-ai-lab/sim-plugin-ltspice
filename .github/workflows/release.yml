@@ -6,11 +6,10 @@ on:
       - "v*"
 
 jobs:
-  build-and-publish:
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write       # required for PyPI trusted-publisher OIDC
-      contents: read
+      contents: write       # required to create the GitHub release + upload assets
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -28,8 +27,12 @@ jobs:
 
       - run: uv build
 
-      # NOTE: PyPI trusted-publisher binding for `sim-plugin-ltspice` must
-      # be pre-bound to this repo before the first tag release. See
-      # `dev-docs/runtime/plugin_extraction_status.md` and the PR that
-      # introduced this workflow for the binding checklist.
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      # Distribution is GitHub-only (no PyPI). The wheel + sdist are uploaded
+      # as release assets and referenced from sim-plugin-index → latest_wheel_url
+      # so `sim plugin install ltspice` can pip-install the wheel directly.
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          generate_release_notes: true
