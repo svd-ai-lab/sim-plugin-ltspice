@@ -8,7 +8,7 @@ versions.
 | Layer | What it returns | When to use | sim-cli path |
 |---|---|---|---|
 | `.meas` (in netlist) | Named scalar(s) per analysis | Acceptance criteria, spec checks | `sim logs last --field measures` |
-| `RawRead` cursors | Scalar queries on traces (`max`, `min`, `mean`, `rms`, `sample_at`) | Ad-hoc values you didn't pre-declare | `sim_ltspice.RawRead(raw_path).max("V(out)")` |
+| `RawRead` cursors | Scalar queries on traces (`max`, `min`, `mean`, `rms`, `sample_at`) | Ad-hoc values you didn't pre-declare | `sim_plugin_ltspice.lib.RawRead(raw_path).max("V(out)")` |
 | `RawRead` arrays | Full NumPy arrays per trace | Plotting, custom math, exporting | `RawRead(raw_path).trace("V(out)")` |
 
 ---
@@ -52,7 +52,7 @@ the `.raw` and ask it. Every method takes a trace name and returns a
 Python scalar — complex on AC analyses, real elsewhere.
 
 ```python
-from sim_ltspice import RawRead
+from sim_plugin_ltspice.lib import RawRead
 
 rr = RawRead("sim.raw")
 
@@ -112,7 +112,7 @@ vout = rr.trace("V(out)")            # np.ndarray — same length as axis
 rr.to_csv("sim.csv")                 # one column per trace; axis first
                                      # complex → "<name>.re" + "<name>.im" pairs
 
-df = rr.to_dataframe()               # requires sim-ltspice[dataframe]
+df = rr.to_dataframe()               # requires sim-plugin-ltspice[dataframe]
                                      # axis is index, one column per non-axis trace
 df["V(out)"].plot()                  # standard pandas from here
 ```
@@ -145,4 +145,4 @@ Do you already know what number you want?
 ## Comparing two runs
 
 For regression / A-B comparison, don't roll your own diff — use
-`sim_ltspice.diff`. See `base/workflows/regression_diff.md`.
+`sim_plugin_ltspice.lib.diff`. See `base/workflows/regression_diff.md`.

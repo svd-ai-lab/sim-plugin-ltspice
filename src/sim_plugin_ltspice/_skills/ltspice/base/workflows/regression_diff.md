@@ -4,7 +4,7 @@ A headline v0.2 use case: when you change a netlist (swap a model,
 retune an R/C, refactor a subcircuit), you want to know **exactly what
 the waveforms did** — not just whether `.meas` still passes.
 
-`sim_ltspice.diff(a, b)` gives you a per-trace delta report with
+`sim_plugin_ltspice.lib.diff(a, b)` gives you a per-trace delta report with
 explicit tolerances. Reach for it whenever you'd otherwise be eyeballing
 two `.raw` files side-by-side.
 
@@ -23,7 +23,7 @@ Rule of thumb: `.meas` is for **specs**, `diff` is for **regressions**.
 ## Basic shape
 
 ```python
-from sim_ltspice import run_net, diff
+from sim_plugin_ltspice.lib import run_net, diff
 
 r_old = run_net("design_v1.net")
 r_new = run_net("design_v2.net")
@@ -109,7 +109,7 @@ Cheapest regression guard for a design repo:
 ```python
 # tests/test_design_regression.py
 from pathlib import Path
-from sim_ltspice import RawRead, run_net, diff
+from sim_plugin_ltspice.lib import RawRead, run_net, diff
 
 GOLDEN = Path(__file__).parent / "fixtures" / "rc_lowpass.golden.raw"
 

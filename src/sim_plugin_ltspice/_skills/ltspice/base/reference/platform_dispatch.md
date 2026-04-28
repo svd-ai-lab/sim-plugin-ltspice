@@ -20,7 +20,7 @@ Or pass `--host <windows-host>` per invocation, or set `SIM_HOST`.
 - ✅ `.net` / `.cir` / `.sp` batch runs — fully supported.
 - ✅ `.meas` result extraction — fully supported.
 - 🟡 `.asc` input — only when the schematic is flat + uses
-  shipped-library symbols (`sim-ltspice`'s native `asc2net` flattener
+  shipped-library symbols (`sim-plugin-ltspice`'s native `asc2net` flattener
   handles these without invoking LTspice).
 - ❌ Hierarchical `.asc`, custom `.subckt` symbols, `-ascii` raw
   output, `-netlist` schematic→netlist conversion.
@@ -33,7 +33,7 @@ Windows host.
 
 LTspice 26.0.0 was the first parallel macOS+Windows release (Dec 2025).
 Capability parity with Windows is greater than 17.x, but the same
-flat-asc-only constraint **applies in `sim-ltspice`'s flattener**
+flat-asc-only constraint **applies in `sim-plugin-ltspice`'s flattener**
 because the library deliberately doesn't shell out to LTspice for
 authoring (the Python flattener handles flat + library-local
 schematics without touching LTspice). For hierarchical or
@@ -62,7 +62,7 @@ custom-symbol `.asc` the answer is still: route via a Windows host.
 Need .raw in ASCII format? ──→ Windows only (`-ascii` flag).
 
 Need schematic→netlist conversion WITHOUT simulating?
-                               ──→ Use sim_ltspice.schematic_to_netlist
+                               ──→ Use sim_plugin_ltspice.lib.schematic_to_netlist
                                    (the broken `-netlist` flag is no
                                    longer the recommended path).
 ```
@@ -84,7 +84,7 @@ LTspice's macOS 17 native build was a direct port with a minimal
 command surface (`-b` only). The full CLI — `-b` / `-Run` / `-netlist`
 / `-ascii` / `-FastAccess` / `-encrypt` / `-sync` — only existed on
 Windows and in wine. LTspice 26 narrowed the gap considerably (macOS
-26 supports more flags), but `sim-ltspice`'s default routing rules
+26 supports more flags), but `sim-plugin-ltspice`'s default routing rules
 still favor the flatten-locally / solve-on-Windows split for
 hierarchical `.asc` because the Python flattener is the most reliable
 authoring path on either platform.

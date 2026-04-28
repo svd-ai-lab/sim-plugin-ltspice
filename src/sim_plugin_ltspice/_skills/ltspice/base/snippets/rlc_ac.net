@@ -1,5 +1,5 @@
 * Series RLC band-pass — output across R, resonant at fr = 1/(2 pi sqrt(LC)) ≈ 5.03 kHz
-* AC sweep produces complex V(out); use sim_ltspice.RawRead for magnitude/phase.
+* AC sweep produces complex V(out); use sim_plugin_ltspice.lib.RawRead for magnitude/phase.
 V1  in  0   AC 1
 L1  in  a   10m
 C1  a   out 100n

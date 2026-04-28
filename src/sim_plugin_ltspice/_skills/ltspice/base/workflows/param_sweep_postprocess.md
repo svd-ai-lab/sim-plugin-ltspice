@@ -65,10 +65,10 @@ When you need the full waveform per step (plotting, FFT, custom
 integration), open the `.raw`:
 
 ```python
-from sim_ltspice import RawRead
+from sim_plugin_ltspice.lib import RawRead
 
 rr = RawRead("param_sweep.raw")
-df = rr.to_dataframe()       # requires sim-ltspice[dataframe]
+df = rr.to_dataframe()       # requires sim-plugin-ltspice[dataframe]
 ```
 
 `rr.to_dataframe()` returns every concatenated step in one frame, with
@@ -101,7 +101,7 @@ When the post-processing is neither a scalar `.meas` nor "plot it":
 
 ```python
 import numpy as np
-from sim_ltspice import RawRead
+from sim_plugin_ltspice.lib import RawRead
 
 rr = RawRead("param_sweep.raw")
 t = rr.axis

@@ -1,7 +1,7 @@
 # Workflow: `.meas`-based acceptance
 
 Pattern for any LTspice design with a numeric acceptance criterion.
-Works today (netlist only); extends to `.asc` once `sim-ltspice` v0.1
+Works today (netlist only); extends to `.asc` once `sim-plugin-ltspice` v0.1
 ships.
 
 ## 1. State the acceptance in words first

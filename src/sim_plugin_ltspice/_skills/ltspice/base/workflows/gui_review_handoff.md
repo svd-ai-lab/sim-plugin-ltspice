@@ -30,7 +30,7 @@ actually needs window introspection.
 
 > **Note (2026-04-24):** The LTspice driver in sim-cli does not yet
 > inject a `gui` object into the session namespace (unlike Fluent /
-> COMSOL / Flotherm). Until it does, drive the GUI with `sim_ltspice`'s
+> COMSOL / Flotherm). Until it does, drive the GUI with `sim_plugin_ltspice.lib`'s
 > install discovery + standard `subprocess`, as shown below.
 
 ## Scenario 1 — review an authored `.asc`
@@ -40,7 +40,7 @@ you want a human to look at it.
 
 ```python
 import subprocess
-from sim_ltspice import (
+from sim_plugin_ltspice.lib import (
     find_ltspice, Netlist, Element, Directive, netlist_to_schematic, write_asc,
 )
 
@@ -69,7 +69,7 @@ print("LTspice is open — close the window when you're done reviewing.")
 proc.wait()             # blocks until the human closes LTspice
 
 # 3. Re-read — captures any in-GUI save the human made.
-from sim_ltspice import read_asc
+from sim_plugin_ltspice.lib import read_asc
 schem = read_asc("review.asc")
 ```
 
@@ -83,7 +83,7 @@ subprocess tracks LTspice.app's lifetime.
 
 ```python
 import subprocess
-from sim_ltspice import find_ltspice, run_net
+from sim_plugin_ltspice.lib import find_ltspice, run_net
 
 result = run_net("design.net")
 assert result.ok, result.stderr
@@ -102,7 +102,7 @@ automation needed.
 ```python
 import subprocess
 from pathlib import Path
-from sim_ltspice import (
+from sim_plugin_ltspice.lib import (
     find_ltspice, read_asc, write_asc, schematic_to_netlist,
     write_net, run_net, diff,
 )
@@ -141,7 +141,7 @@ Combine with `.meas`-based acceptance:
 
 ```python
 import subprocess
-from sim_ltspice import find_ltspice, run_net
+from sim_plugin_ltspice.lib import find_ltspice, run_net
 
 # Agent proposes, human reviews, agent runs, verifies acceptance.
 subprocess.Popen([str(find_ltspice()[0].exe), "design.asc"]).wait()
