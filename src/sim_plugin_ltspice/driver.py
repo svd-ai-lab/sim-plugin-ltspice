@@ -250,6 +250,17 @@ class LTspiceDriver:
             "raw": str(lt.raw_path) if lt.raw_path else None,
         }
 
+        # Solver-level diagnostics: turn the raw waveforms into per-trace
+        # min/max/mean/rms over the steady-state window so the agent can
+        # spot topology bugs (essentially-off diodes, blowup, etc.)
+        # without having to RawRead the binary file by hand. Failures are
+        # non-fatal — the run record stays the source of truth.
+        try:
+            from sim_plugin_ltspice.diagnose import diagnose as _diagnose
+            parsed["diagnostics"] = _diagnose(lt.raw_path, lt.log_path)
+        except Exception as exc:  # pragma: no cover — diagnostics must never break a run
+            parsed["diagnostics"] = {"error": f"diagnose() raised: {exc}"}
+
         errors: list[str] = [f"[log] {e}" for e in lt.log.errors]
         exit_code = lt.exit_code
         if exit_code == 0 and errors:
