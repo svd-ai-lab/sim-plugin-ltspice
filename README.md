@@ -14,8 +14,8 @@ sim plugin install ltspice
 Other paths:
 
 ```bash
-pip install git+https://github.com/svd-ai-lab/sim-plugin-ltspice@v0.1.0
-pip install https://github.com/svd-ai-lab/sim-plugin-ltspice/releases/download/v0.1.0/sim_plugin_ltspice-0.1.0-py3-none-any.whl
+pip install git+https://github.com/svd-ai-lab/sim-plugin-ltspice@v0.2.2
+pip install https://github.com/svd-ai-lab/sim-plugin-ltspice/releases/download/v0.2.2/sim_plugin_ltspice-0.2.2-py3-none-any.whl
 pip install -e .
 ```
 

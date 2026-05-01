@@ -1,19 +1,25 @@
 ---
 name: ltspice-sim
-description: Use when running LTspice circuit simulations through sim-cli — authoring `.net` netlists (and soon `.asc` schematics) for analog, power-electronics, and board-level designs, then reading structured `.meas` results from the log. Covers netlist authoring conventions, platform quirks (macOS 17.x vs Windows 26.x), and the sim-cli one-shot batch lifecycle.
+description: Use when working with LTspice circuit simulations: authoring `.net` netlists and `.asc` schematics, running LTspice by the simplest available batch path, and extracting verifiable `.meas`, `.log`, or `.raw` results. Prefer `sim run --solver ltspice` when sim-cli is available because it records structured run history, but direct LTspice batch commands and portable file parsing are first-class paths.
 ---
 
 # ltspice-sim
 
-You are driving **LTspice** via sim-cli in the **one-shot batch** model.
-This file is the **index** — it tells you where to look for content,
-not what the content says.
+This file is the **LTspice** index. Use the simplest reliable execution
+path for the workspace you are in. When `sim` is available, prefer
+`sim run --solver ltspice` because it gives you structured `.meas`
+results, run history, and a consistent error surface. When a task already
+provides a direct LTspice launcher (`LTspice.exe -b`, `wine-ltspice`, a
+Docker wrapper, or a plain Bash script), that path is equally valid.
 
-> **First, read [`../sim-cli/SKILL.md`](../sim-cli/SKILL.md)** — it owns
-> the shared runtime contract (command surface, one-shot lifecycle,
-> Step-0 version probe, input classification, acceptance, escalation).
-> This skill covers only the LTspice-specific layer on top of that
-> contract.
+Use portable file parsing for completed `.log` and `.raw` artifacts. Do
+not route every post-processing step back through sim-cli just because
+sim exists.
+
+Read [`../sim-cli/SKILL.md`](../sim-cli/SKILL.md) when you are using the
+sim-cli path or a remote `sim serve` host. This skill covers the
+LTspice-specific layer: netlist/schematic conventions, platform quirks,
+batch execution, and result extraction.
 
 ---
 
@@ -27,9 +33,26 @@ plugin ships its own Python API as `sim_plugin_ltspice.lib`: pure-Python
 parsers for `.asc`/`.net`/`.log`/`.raw` plus a subprocess runner around
 the LTspice CLI. That bundled lib IS the Python API for LTspice.
 
-Implication: everything in this skill stays identical whether you call
-`sim run foo.net --solver ltspice`, or import `sim_plugin_ltspice.lib` directly in
-Python. The file format understanding and platform quirks are the same.
+Implication: the LTspice-specific advice in this skill stays useful whether
+you call `sim run foo.net --solver ltspice`, invoke LTspice directly in batch
+mode, or import `sim_plugin_ltspice.lib` in Python. The file format
+understanding and platform quirks are the same.
+
+## Execution paths
+
+Pick the path with the least moving parts that still gives verifiable
+artifacts:
+
+| Path | Use when | Typical command |
+|---|---|---|
+| `sim run` | sim-cli is installed, or you need run history / structured JSON / remote dispatch | `sim run design.net --solver ltspice` |
+| Direct LTspice batch | LTspice is on the host and the task already has a stable launcher | `LTspice.exe -b design.net` |
+| Wine/headless wrapper | Running inside Linux containers with LTspice under Wine | `wine-ltspice design.net` or the task's provided wrapper |
+| Python library | You already have `.log` / `.raw`, or need schematic/netlist/raw parsing | `python -c "from sim_plugin_ltspice.lib import RawRead"` |
+
+For benchmark and agent tasks, the important requirement is not which
+launcher you used. It is that reported values are grounded in produced
+artifacts and can be re-extracted.
 
 ## Input classification
 
@@ -38,11 +61,10 @@ Python. The file format understanding and platform quirks are the same.
 | `.net` / `.cir` / `.sp` netlist | ✅ today | SPICE3 syntax; first line is title (ignored by solver); must contain at least one analysis directive |
 | `.asc` schematic (flat, library-local) | 🟡 sim-plugin-ltspice v0.1+ — on macOS goes through our native asc2net; on Windows/wine goes through LTspice's own `-netlist` | Schematic opens in LTspice GUI for human review |
 | `.asc` schematic (hierarchical or custom lib) | 🟡 Windows / wine only | Routed through `sim_plugin_ltspice.lib.schematic_to_netlist` (the in-process Python flattener, since LTspice 26.0.1's `-netlist` flag is broken). On macOS raises `MacOSCannotFlatten` with guidance to route via a Windows host. |
-| `.raw` / `.log` inputs | ❌ outputs only | Do not pass these to `sim run` |
+| `.raw` / `.log` inputs | ❌ outputs only | Parse them directly with shell/Python or `sim_plugin_ltspice.lib` |
 
-When you produce a netlist for an agent workflow, **always use `.net`**.
-It's the most portable (no LTspice version drift) and the sim-cli
-driver has the fewest edge cases for it.
+When you produce a netlist for an agent workflow, prefer `.net`. It is
+the most portable input format and has the fewest platform edge cases.
 
 ## Platform capabilities
 
@@ -74,18 +96,18 @@ flag-by-flag table lives in
 
 ## Hard constraints (LTspice-specific)
 
-These add to — do not replace — the shared skill's hard constraints.
-
 1. **Every netlist must have an analysis directive.** At least one of
    `.tran`, `.ac`, `.dc`, `.op`, `.noise`, `.tf`, `.four`. Without one,
-   LTspice returns exit code 0 but produces no useful output. `sim lint`
-   catches this.
+   LTspice returns exit code 0 but produces no useful output. If using
+   sim-cli, `sim lint` can catch this before the run.
 2. **Put `.meas` statements in the netlist, not in a config file.**
-   That's how structured values get surfaced on `sim logs last --field
-   measures`. Free-form `.print` output is harder to parse.
-3. **Never rely on workspace / state across `sim run` calls.** Each
-   invocation is a cold LTspice batch. Chain steps by writing out
-   intermediate `.net` variations in Python, not by stateful execution.
+   That is how stable scalar values appear in the `.log`; sim-cli also
+   surfaces them as structured `measures` when you use `sim run`.
+   Free-form `.print` output is harder to parse.
+3. **Never rely on hidden workspace / process state across batch runs.**
+   Each invocation is a cold LTspice batch whether launched directly or
+   through sim-cli. Chain steps by writing out intermediate `.net`
+   variations in Python, not by stateful execution.
 4. **First line of a netlist is the title, always ignored.** Component
    declarations start at line 2. A common mistake is putting `V1 in 0
    1` on line 1 — LTspice silently treats it as comment text.
@@ -98,20 +120,21 @@ These add to — do not replace — the shared skill's hard constraints.
 
 ## Required protocol (one paragraph)
 
-Follow the shared skill's required protocol for the **one-shot batch**
-model. LTspice-specific steps: validate the `.net` has a title line +
-at least one analysis directive + `.meas` statements for every metric
-the acceptance criterion checks; run `sim run <script.net> --solver
-ltspice`; read the structured results with `sim logs last --field
-measures` (returns `{"<name>": {"expr": "...", "value": <float>,
-"from": ..., "to": ...}}`); evaluate against acceptance per the shared
-skill's `acceptance.md`. For parameter sweeps, use `.step param` inside
-the netlist — one `sim run` covers the whole sweep; the resulting
-`.raw` has one dataset per step.
+Check that LTspice is available by the intended route (`sim check ltspice`
+for sim-cli, or the task's direct launcher/version command otherwise).
+Validate that the `.net` has a title line, at least one analysis directive,
+and `.meas` statements for every scalar acceptance metric. Run the deck by
+the simplest available batch path. If using sim-cli, read structured
+results with `sim logs last --field measures`; if running directly, parse
+the produced `.log` or `.raw` with shell/Python. Evaluate against the task's
+acceptance criteria using values re-extracted from those artifacts. For
+parameter sweeps, prefer `.step param` inside the netlist so one batch run
+covers the sweep; the resulting `.raw` has one dataset per step.
 
 ## LTspice-specific layered content
 
-Always read `base/reference/`, then the relevant snippets + workflows.
+Read the relevant `base/reference/` pages, snippets, and workflows for the
+task at hand.
 
 ### `base/` — always relevant
 
