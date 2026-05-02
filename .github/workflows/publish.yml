@@ -1,15 +1,18 @@
-name: release
+name: publish
 
 on:
   push:
     tags:
       - "v*"
 
+permissions: {}
+
 jobs:
-  build-and-release:
+  build-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # required to create the GitHub release + upload assets
+      contents: write     # GitHub release + asset upload
+      id-token: write     # PyPI Trusted Publishing (OIDC)
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -27,9 +30,9 @@ jobs:
 
       - run: uv build
 
-      # Distribution is GitHub-only (no PyPI). The wheel + sdist are uploaded
-      # as release assets and referenced from sim-plugin-index → latest_wheel_url
-      # so `sim plugin install ltspice` can pip-install the wheel directly.
+      - name: Publish to PyPI (Trusted Publishing)
+        run: uv publish --trusted-publishing automatic
+
       - uses: softprops/action-gh-release@v2
         with:
           files: |
