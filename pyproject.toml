@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sim-plugin-ltspice"
-version = "0.2.2"
+version = "0.2.3"
 description = "LTspice driver for sim — bundled .asc/.net/.raw/.log library + driver in one wheel."
 readme = "README.md"
 license = "Apache-2.0"
