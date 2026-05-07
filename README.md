@@ -97,7 +97,8 @@ After install:
 ```bash
 sim plugin doctor ltspice
 sim plugin sync-skills
-sim drivers | grep ltspice
+sim plugin list
+sim plugin info ltspice
 sim check ltspice
 ```
 

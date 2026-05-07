@@ -570,7 +570,7 @@ class RawRead:
         """Return the traces as a ``pandas.DataFrame``.
 
         Requires the ``dataframe`` extra (``pip install
-        'sim-ltspice[dataframe]'``). The axis is the index; each
+        'sim-plugin-ltspice[dataframe]'``). The axis is the index; each
         remaining variable gets one column. Complex traces stay as
         complex dtype — pandas handles that natively.
         """
@@ -579,7 +579,7 @@ class RawRead:
         except ImportError as exc:  # pragma: no cover — coverage via test_requires
             raise ImportError(
                 "to_dataframe() requires pandas; install with "
-                "`pip install 'sim-ltspice[dataframe]'` or `uv add pandas`"
+                "`pip install 'sim-plugin-ltspice[dataframe]'` or `uv add pandas`"
             ) from exc
 
         axis_name = self.variables[0].name
