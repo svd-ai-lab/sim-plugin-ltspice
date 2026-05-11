@@ -1,23 +1,23 @@
 ---
 name: ltspice-sim
-description: Use when working with LTspice circuit simulations: authoring `.net` netlists and `.asc` schematics, running LTspice by the simplest available batch path, and extracting verifiable `.meas`, `.log`, or `.raw` results. Prefer `sim run --solver ltspice` when sim-cli is available because it records structured run history, but direct LTspice batch commands and portable file parsing are first-class paths.
+description: Use when working with LTspice circuit simulations: authoring `.net` netlists and `.asc` schematics, running LTspice by the simplest available batch path, and extracting verifiable `.meas`, `.log`, or `.raw` results. Prefer `uv run sim run --solver ltspice` when sim-cli is available because it records structured run history, but direct LTspice batch commands and portable file parsing are first-class paths.
 ---
 
 # ltspice-sim
 
 This file is the **LTspice** index. Use the simplest reliable execution
 path for the workspace you are in. When `sim` is available, prefer
-`sim run --solver ltspice` because it gives you structured `.meas`
+`uv run sim run --solver ltspice` because it gives you structured `.meas`
 results, run history, and a consistent error surface. When a task already
 provides a direct LTspice launcher (`LTspice.exe -b`, `wine-ltspice`, a
 Docker wrapper, or a plain Bash script), that path is equally valid.
 
 Use portable file parsing for completed `.log` and `.raw` artifacts. Do
 not route every post-processing step back through sim-cli just because
-sim exists.
+uv run sim exists.
 
 Read [`../sim-cli/SKILL.md`](../sim-cli/SKILL.md) when you are using the
-sim-cli path or a remote `sim serve` host. This skill covers the
+sim-cli path or a remote `uv run sim serve` host. This skill covers the
 LTspice-specific layer: netlist/schematic conventions, platform quirks,
 batch execution, and result extraction.
 
@@ -34,7 +34,7 @@ parsers for `.asc`/`.net`/`.log`/`.raw` plus a subprocess runner around
 the LTspice CLI. That bundled lib IS the Python API for LTspice.
 
 Implication: the LTspice-specific advice in this skill stays useful whether
-you call `sim run foo.net --solver ltspice`, invoke LTspice directly in batch
+you call `uv run sim run foo.net --solver ltspice`, invoke LTspice directly in batch
 mode, or import `sim_plugin_ltspice.lib` in Python. The file format
 understanding and platform quirks are the same.
 
@@ -45,7 +45,7 @@ artifacts:
 
 | Path | Use when | Typical command |
 |---|---|---|
-| `sim run` | sim-cli is installed, or you need run history / structured JSON / remote dispatch | `sim run design.net --solver ltspice` |
+| `uv run sim run` | sim-cli is installed, or you need run history / structured JSON / remote dispatch | `uv run sim run design.net --solver ltspice` |
 | Direct LTspice batch | LTspice is on the host and the task already has a stable launcher | `LTspice.exe -b design.net` |
 | Wine/headless wrapper | Running inside Linux containers with LTspice under Wine | `wine-ltspice design.net` or the task's provided wrapper |
 | Python library | You already have `.log` / `.raw`, or need schematic/netlist/raw parsing | `python -c "from sim_plugin_ltspice.lib import RawRead"` |
@@ -79,7 +79,7 @@ the most portable input format and has the fewest platform edge cases.
 | `-FastAccess` `.raw` reformat | ❌ | ✅ | ✅ | ✅ |
 | `-sync` re-extract bundled libs | ❌ | ✅ | ✅ | ✅ |
 | `-version` print version (stderr) | ✅ | ✅ | ✅ | ✅ |
-| `.asc` direct input to sim run | native asc2net only (flat + library-local) | native asc2net | full | full |
+| `.asc` direct input to uv run sim run | native asc2net only (flat + library-local) | native asc2net | full | full |
 | `.log` encoding | UTF-16 LE (no BOM) | UTF-8 | UTF-8 | UTF-16 LE |
 | `.raw` header encoding | UTF-16 LE | UTF-16 LE | UTF-16 LE | UTF-16 LE |
 
@@ -89,7 +89,7 @@ binary touched. Use `-netlist` only when the flattener can't handle a
 hierarchy or custom-symbol case.
 
 If you need a feature macOS lacks (or to dodge the 26.0.1 `-netlist`
-regression), route through `sim --host <windows-host>`. See
+regression), route through `uv run sim --host <windows-host>`. See
 `../sim-cli/SKILL.md` for the HTTP dispatch model. The full
 flag-by-flag table lives in
 [`base/reference/command_line_switches.md`](base/reference/command_line_switches.md).
@@ -99,10 +99,10 @@ flag-by-flag table lives in
 1. **Every netlist must have an analysis directive.** At least one of
    `.tran`, `.ac`, `.dc`, `.op`, `.noise`, `.tf`, `.four`. Without one,
    LTspice returns exit code 0 but produces no useful output. If using
-   sim-cli, `sim lint` can catch this before the run.
+   sim-cli, `uv run sim lint` can catch this before the run.
 2. **Put `.meas` statements in the netlist, not in a config file.**
    That is how stable scalar values appear in the `.log`; sim-cli also
-   surfaces them as structured `measures` when you use `sim run`.
+   surfaces them as structured `measures` when you use `uv run sim run`.
    Free-form `.print` output is harder to parse.
 3. **Never rely on hidden workspace / process state across batch runs.**
    Each invocation is a cold LTspice batch whether launched directly or
@@ -120,12 +120,12 @@ flag-by-flag table lives in
 
 ## Required protocol (one paragraph)
 
-Check that LTspice is available by the intended route (`sim check ltspice`
+Check that LTspice is available by the intended route (`uv run sim check ltspice`
 for sim-cli, or the task's direct launcher/version command otherwise).
 Validate that the `.net` has a title line, at least one analysis directive,
 and `.meas` statements for every scalar acceptance metric. Run the deck by
 the simplest available batch path. If using sim-cli, read structured
-results with `sim logs last --field measures`; if running directly, parse
+results with `uv run sim logs last --field measures`; if running directly, parse
 the produced `.log` or `.raw` with shell/Python. Evaluate against the task's
 acceptance criteria using values re-extracted from those artifacts. For
 parameter sweeps, prefer `.step param` inside the netlist so one batch run
@@ -152,11 +152,11 @@ task at hand.
 | `base/snippets/rlc_ac.net` | Series-RLC band-pass AC sweep — complex `.raw` traces, resonance `.meas` |
 | `base/snippets/inverting_amp.net` | Inverting op-amp with `.include LTC.lib` and gain `.meas` |
 | `base/snippets/param_sweep.net` | `.step param R 1k 100k dec 5` + acceptance via `.meas` max/min |
-| `base/workflows/meas_based_acceptance.md` | End-to-end: define acceptance → write `.meas` → `sim run` → read JSON → verify |
+| `base/workflows/meas_based_acceptance.md` | End-to-end: define acceptance → write `.meas` → `uv run sim run` → read JSON → verify |
 | `base/workflows/regression_diff.md` | Two-run `.raw` comparison with `sim_plugin_ltspice.lib.diff(a, b)`. Pin a golden `.raw`, gate refactor PRs on waveform equivalence |
 | `base/workflows/gui_review_handoff.md` | Python builds `.asc` → spawn LTspice GUI → human reviews / edits → re-read. Waveform viewer handoff. `sim.gui` pywinauto notes for Windows dialogs |
 | `base/workflows/param_sweep_postprocess.md` | `.step param` sweep → extract per-step scalars (`.meas`) or slice full traces (`RawRead.to_dataframe()` + axis-seam split) for plotting / custom math |
-| `base/workflows/monte_carlo.md` *(planned — not yet written)* | Monte-Carlo via `.step` + `mc()` + Python loop with `sim run` per seed |
+| `base/workflows/monte_carlo.md` *(planned — not yet written)* | Monte-Carlo via `.step` + `mc()` + Python loop with `uv run sim run` per seed |
 
 ### Documentation lookup
 
@@ -172,7 +172,7 @@ installed locally.
 For authoritative syntax questions on a Windows host:
 
 ```bash
-sim --host <windows-host> exec 'cat "%LOCALAPPDATA%\Programs\ADI\LTspice\LTspiceHelp\<topic>.htm"'
+uv run sim --host <windows-host> exec 'cat "%LOCALAPPDATA%\Programs\ADI\LTspice\LTspiceHelp\<topic>.htm"'
 ```
 
 For anyone else, consult the LTspice Users' Guide PDF (search
@@ -206,10 +206,10 @@ convention.
    log parser, exclude newlines from the expression capture. (Ours
    does — see the sim-cli driver's regex.)
 
-5. **macOS `.asc` refusal.** If `sim run my.asc --solver ltspice`
+5. **macOS `.asc` refusal.** If `uv run sim run my.asc --solver ltspice`
    errors with `MacOSCannotFlatten`, either (a) ensure the schematic
    uses only shipped-library symbols and no hierarchy, or (b) route
-   via `sim --host <windows-host>`.
+   via `uv run sim --host <windows-host>`.
 
 6. **`-netlist` is broken on LTspice 26.0.1 (Windows).** The flag
    silently hangs — no `.net` written, no exit code, no signal.

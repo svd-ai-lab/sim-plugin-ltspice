@@ -62,7 +62,7 @@ Workarounds:
 
 LTspice GUI cannot render under `WinSta0\Service`, the session SSH
 processes land in. A `-b` invocation from SSH on Windows hangs (no
-output, never terminates). Workarounds: run `sim serve` from an
+output, never terminates). Workarounds: run `uv run sim serve` from an
 interactive desktop (RDP) session, or invoke from inside an RDP
 shell. The `sim-plugin-ltspice` runner has a 300 s default timeout that
 makes this fail-fast rather than hang forever.

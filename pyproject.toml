@@ -30,7 +30,8 @@ classifiers = [
 dependencies = [
     # Versioned pin against PyPI sim-cli-core 0.3.0 (pure-plugin architecture
     # release). Replaces an earlier `sim-cli-core @ git+...sim-cli@main` pin
-    # that was clobbering editable installs on `sim plugin install --upgrade`
+    # that was clobbering editable installs on the legacy plugin-install
+    # upgrade path
     # — see sim-cli#80.
     "sim-cli-core>=0.3",
     # numpy is a runtime requirement of the bundled .raw / .log parsers

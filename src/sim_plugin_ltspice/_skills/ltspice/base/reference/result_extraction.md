@@ -7,7 +7,7 @@ versions.
 
 | Layer | What it returns | When to use | sim-cli path |
 |---|---|---|---|
-| `.meas` (in netlist) | Named scalar(s) per analysis | Acceptance criteria, spec checks | `sim logs last --field measures` |
+| `.meas` (in netlist) | Named scalar(s) per analysis | Acceptance criteria, spec checks | `uv run sim logs last --field measures` |
 | `RawRead` cursors | Scalar queries on traces (`max`, `min`, `mean`, `rms`, `sample_at`) | Ad-hoc values you didn't pre-declare | `sim_plugin_ltspice.lib.RawRead(raw_path).max("V(out)")` |
 | `RawRead` arrays | Full NumPy arrays per trace | Plotting, custom math, exporting | `RawRead(raw_path).trace("V(out)")` |
 
@@ -20,8 +20,8 @@ the end of the run. Results flow into the `.log` and sim-cli's driver
 surfaces them as structured JSON:
 
 ```bash
-sim run rlc_ac.net --solver ltspice
-sim logs last --field measures --json
+uv run sim run rlc_ac.net --solver ltspice
+uv run sim logs last --field measures --json
 # → {"fr":      {"expr": "WHEN Vdb(out)=MAX(Vdb(out))", "value": 5023.4, "from": 0, "to": 0},
 #    "peakdb":  {"expr": "MAX Vdb(out)",                "value":   19.2, "from": 0, "to": 0},
 #    "q_est":   {"expr": "FIND Vdb(out) AT 5.03k",      "value":   19.1, "from": 0, "to": 0}}

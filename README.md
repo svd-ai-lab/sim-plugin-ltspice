@@ -8,9 +8,9 @@ generate `.asc` schematics and `.net`/`.cir` netlists, run LTspice, parse
 `.log` and `.raw` artifacts, extract `.meas` values, and turn simulation output
 into grounded engineering reports.
 
-LTspice itself is not bundled — install and use LTspice under its own license.
-This plugin supplies the agent-friendly file-format, run, and result-inspection
-layer around the LTspice tools you provide.
+LTspice itself is not bundled. This plugin supplies the agent-friendly
+file-format, run, and result-inspection layer around the LTspice tools you
+provide.
 
 ## What an agent can do with LTspice
 
@@ -32,7 +32,7 @@ agent and auditable by an engineer.
 ### 1. Run a circuit and collect structured results
 
 ```bash
-sim run --solver ltspice path/to/design.net --json
+uv run sim run --solver ltspice path/to/design.net --json
 ```
 
 Use this when the agent should keep a structured run record and surface stable
@@ -60,13 +60,14 @@ PY
 Give Codex, Claude Code, or another coding agent this instruction:
 
 ```text
-Use sim-plugin-ltspice for LTspice work. Prefer `sim run --solver ltspice`
-when sim-cli is installed because it records structured run history. For
-post-processing, parse produced `.log` and `.raw` artifacts directly with the
-bundled `sim_plugin_ltspice.lib` helpers. Put `.meas` statements in the circuit
-when scalar KPIs are needed. Report only values that can be re-extracted from
-artifacts produced during the run; if a simulation fails, report the verifiable
-failure status and logs instead of inventing results.
+Use sim-plugin-ltspice for LTspice work. Prefer `uv run sim run --solver
+ltspice` because it records structured run history from the project
+environment. For post-processing, parse produced `.log` and `.raw` artifacts
+directly with the bundled `sim_plugin_ltspice.lib` helpers. Put `.meas`
+statements in the circuit when scalar KPIs are needed. Report only values that
+can be re-extracted from artifacts produced during the run; if a simulation
+fails, report the verifiable failure status and logs instead of inventing
+results.
 ```
 
 The bundled skill entry point is:
@@ -77,30 +78,32 @@ src/sim_plugin_ltspice/_skills/ltspice/SKILL.md
 
 ## Install
 
-Recommended plugin install:
+For agent projects, install sim-cli-core and the LTspice plugin in the project
+environment:
 
-```bash
-sim plugin install ltspice
+```powershell
+uv init  # only if this is not already a uv project
+uv add sim-cli-core sim-plugin-ltspice
+uv run sim plugin sync-skills --target .agents/skills --copy
+uv run sim check ltspice
+uv run sim plugin doctor ltspice --deep
 ```
 
-Other install paths:
+For Claude Code, sync the bundled skill to `.claude/skills` instead:
 
-```bash
-pip install sim-plugin-ltspice
-pip install git+https://github.com/svd-ai-lab/sim-plugin-ltspice@v0.2.3
-pip install https://github.com/svd-ai-lab/sim-plugin-ltspice/releases/download/v0.2.3/sim_plugin_ltspice-0.2.3-py3-none-any.whl
-pip install -e .
+```powershell
+uv run sim plugin sync-skills --target .claude/skills --copy
 ```
 
-After install:
+For a reproducible agent run, pin a commit SHA:
 
-```bash
-sim plugin doctor ltspice
-sim plugin sync-skills
-sim plugin list
-sim plugin info ltspice
-sim check ltspice
+```powershell
+uv add sim-cli-core "git+https://github.com/svd-ai-lab/sim-plugin-ltspice.git@<commit-sha>"
 ```
+
+`uv run sim ...` runs sim from this project environment, so it sees this
+project's plugins. Without uv, create and activate a venv, then install
+`sim-cli-core` plus this plugin with `python -m pip`.
 
 ## Requirements and platform notes
 

@@ -35,8 +35,8 @@ the acceptance statement.
 ## 3. Run
 
 ```bash
-sim run design.net --solver ltspice
-sim logs last --field measures
+uv run sim run design.net --solver ltspice
+uv run sim logs last --field measures
 # → {"fc": {..., "value": 995.2}, "gain_dc": {..., "value": -0.008}}
 ```
 
@@ -59,8 +59,8 @@ assert -0.1 <= m["gain_dc"]["value"] <= 0, m["gain_dc"]
 
 If `fc` is wrong, don't change `R` and `C` together. Drop `C` to a
 reference value (100n), sweep `R` with `.step param R 1k 2k lin 10`,
-`sim run` once, and read the array-valued `fc` back from
-`sim logs last --field measures`. Then pick the `R` whose `fc` is
+`uv run sim run` once, and read the array-valued `fc` back from
+`uv run sim logs last --field measures`. Then pick the `R` whose `fc` is
 closest to 1 kHz and lock that in.
 
 ## 6. If acceptance is ambiguous

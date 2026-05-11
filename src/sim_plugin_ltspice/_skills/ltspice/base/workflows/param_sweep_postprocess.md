@@ -4,7 +4,7 @@
 post-processing options, from cheapest to richest:
 
 1. `.meas` aggregator — scalar per step, surfaced as a list via
-   `sim logs last --field measures`.
+   `uv run sim logs last --field measures`.
 2. `RawRead.to_dataframe()` — full traces for every step, as a
    `pandas.DataFrame` indexed by the sweep axis.
 3. `RawRead` arrays + NumPy — custom per-step math.
@@ -37,8 +37,8 @@ See `base/snippets/param_sweep.net` for a copy-paste version.
 ## Pattern 1 — `.meas` per step (scalar summary)
 
 ```bash
-sim run param_sweep.net --solver ltspice
-sim logs last --field measures --json
+uv run sim run param_sweep.net --solver ltspice
+uv run sim logs last --field measures --json
 # → {"vout_peak": {"expr": "MAX V(out)",
 #                  "value": [4.91, 4.94, 4.96, 4.98, 4.99],  # list — one per step
 #                  "from": 0, "to": 0.005,
@@ -154,7 +154,7 @@ wasted.
 
 ## Anti-patterns
 
-- **Don't spawn one `sim run` per step from Python.** `.step` is what
+- **Don't spawn one `uv run sim run` per step from Python.** `.step` is what
   LTspice is built for — one run, one `.raw`, N-point analysis. Python
   loops only when the sweep needs control flow LTspice can't express
   (e.g. early-stop on acceptance fail).

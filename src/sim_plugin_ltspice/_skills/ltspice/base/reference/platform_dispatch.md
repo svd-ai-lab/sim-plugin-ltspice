@@ -4,7 +4,7 @@ LTspice has two install flavors with non-trivial capability gaps. Pick
 the right one for what you're doing.
 
 The placeholder `<windows-host>` below stands for whatever Windows
-machine is running `sim serve`. Configure it once via
+machine is running `uv run sim serve`. Configure it once via
 `~/.sim/config.toml`:
 
 ```toml
@@ -12,7 +12,7 @@ machine is running `sim serve`. Configure it once via
 host = "<windows-host>"   # an IP, a hostname, or a Tailscale name
 ```
 
-…then `sim run …` routes there automatically with no `--host` flag.
+…then `uv run sim run …` routes there automatically with no `--host` flag.
 Or pass `--host <windows-host>` per invocation, or set `SIM_HOST`.
 
 ## macOS native (LTspice 17.x)
@@ -25,7 +25,7 @@ Or pass `--host <windows-host>` per invocation, or set `SIM_HOST`.
 - ❌ Hierarchical `.asc`, custom `.subckt` symbols, `-ascii` raw
   output, `-netlist` schematic→netlist conversion.
 
-If `sim run my.asc --solver ltspice` raises `MacOSCannotFlatten`,
+If `uv run sim run my.asc --solver ltspice` raises `MacOSCannotFlatten`,
 your schematic is hitting one of the ❌ cases above. Route via a
 Windows host.
 
@@ -46,7 +46,7 @@ custom-symbol `.asc` the answer is still: route via a Windows host.
 - ⚠️ `-netlist` is **broken on 26.0.1** — see
   [`command_line_switches.md`](command_line_switches.md) "Known
   regressions". Use the in-process flattener instead.
-- Reach it via `sim --host <windows-host>` (configurable; see
+- Reach it via `uv run sim --host <windows-host>` (configurable; see
   `../sim-cli/SKILL.md` for the HTTP dispatch model).
 
 ## Decision tree
@@ -72,10 +72,10 @@ Need schematic→netlist conversion WITHOUT simulating?
 ```bash
 # Auto-detect: local if possible, remote Windows host otherwise.
 # sim-cli handles the routing based on the input's requirements.
-sim run design.asc --solver ltspice
+uv run sim run design.asc --solver ltspice
 
 # Force-remote (always go to Windows even when local would work)
-sim --host <windows-host> run design.asc --solver ltspice
+uv run sim --host <windows-host> run design.asc --solver ltspice
 ```
 
 ## Why the difference?
